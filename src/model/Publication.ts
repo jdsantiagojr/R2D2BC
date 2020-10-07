@@ -28,30 +28,30 @@ export interface Metadata {
 }
 
 export interface Link {
-        //  The link destination
+    //  The link destination
     href?: string;
-        /// MIME type of resource.
+    /// MIME type of resource.
     type?: string;
-        /// Indicates the relationship between the resource and its containing collection.
+    /// Indicates the relationship between the resource and its containing collection.
     rel?: Array<string>;
-        /// Indicates the height of the linked resource in pixels.
+    /// Indicates the height of the linked resource in pixels.
     height?: number;
-        /// Indicates the width of the linked resource in pixels.
+    /// Indicates the width of the linked resource in pixels.
     width?: number;
 
     title?: string;
-        /// Properties associated to the linked resource.
+    /// Properties associated to the linked resource.
     // properties: Properties;
-        /// Indicates the length of the linked resource in seconds.
+    /// Indicates the length of the linked resource in seconds.
     duration?: number;
-        /// Indicates that the linked resource is a URI template.
+    /// Indicates that the linked resource is a URI template.
     templated?: boolean;
-        /// Indicate the bitrate for the link resource.
+    /// Indicate the bitrate for the link resource.
     bitrate?: number;
 
-        //  The underlying nodes in a tree structure of Links
+    //  The underlying nodes in a tree structure of Links
     children?: Array<Link>;
-        //  The MediaOverlays associated to the resource of the Link
+    //  The MediaOverlays associated to the resource of the Link
     // mediaOverlays?: MediaOverlays;
 
 }
@@ -70,7 +70,7 @@ export default class Publication {
 
     public static async getManifest(manifestUrl: URL, store?: Store): Promise<Publication> {
         const fetchManifest = async (): Promise<Publication> => {
-            const response = await window.fetch(manifestUrl.href, {credentials: 'same-origin'})
+            const response = await window.fetch(manifestUrl.href, { credentials: 'same-origin' })
             const manifestJSON = await response.json();
             if (store) {
                 await store.set("manifest", JSON.stringify(manifestJSON));
@@ -116,10 +116,7 @@ export default class Publication {
     }
 
     public getStartLink(): Link | null {
-        if (this.readingOrder.length > 0) {
-            return this.readingOrder[0];
-        }
-        return null;
+        return this.readingOrder.length > 0 ? this.readingOrder[0] : null;
     }
 
     public getPreviousSpineItem(href: string): Link | null {
@@ -132,31 +129,21 @@ export default class Publication {
 
     public getNextSpineItem(href: string): Link | null {
         const index = this.getSpineIndex(href);
-        if (index !== null && index < (this.readingOrder.length -1)) {
+        if (index !== null && index < (this.readingOrder.length - 1)) {
             return this.readingOrder[index + 1];
         }
         return null;
     }
 
     public getSpineItem(href: string): Link | null {
-        const index = this.getSpineIndex(href);
-        if (index !== null) {
-            return this.readingOrder[index];
-        }
-        return null;
+        return this.readingOrder[this.getSpineIndex(href)] || null;
     }
 
     public getSpineIndex(href: string): number | null {
-        for (let index = 0; index < this.readingOrder.length; index++) {
-            const item = this.readingOrder[index];
-            if (item.href) {
-                const itemUrl = new URL(item.href, this.manifestUrl.href).href;
-                if (itemUrl === href) {
-                    return index;
-                }
-            }
-        }
-        return null;
+        const index = this.readingOrder
+            .findIndex(item => item.href && new URL((item.href, this.manifestUrl.href)).href === href);
+
+        return index >= 0 ? index : null;
     }
 
     public getAbsoluteHref(href: string): string | null {
@@ -174,7 +161,7 @@ export default class Publication {
             for (let index = 0; index < links.length; index++) {
                 const item = links[index];
                 if (item.href) {
-                    const hrefAbsolutre = (item.href.indexOf("#") !== -1)  ?  item.href.slice(0, item.href.indexOf("#")) : item.href
+                    const hrefAbsolutre = (item.href.indexOf("#") !== -1) ? item.href.slice(0, item.href.indexOf("#")) : item.href
                     const itemUrl = new URL(hrefAbsolutre, this.manifestUrl.href).href;
                     if (itemUrl === href) {
                         return item;
@@ -190,7 +177,7 @@ export default class Publication {
             return null;
         }
         let link = findItem(absolute, this.tableOfContents);
-        if(link === null) {
+        if (link === null) {
             link = findItem(absolute, this.readingOrder);
         }
         return link
@@ -216,7 +203,7 @@ export default class Publication {
             return null;
         }
         let link = findItem(href, this.tableOfContents);
-        if(link === null) {
+        if (link === null) {
             link = findItem(href, this.readingOrder);
         }
         return link
