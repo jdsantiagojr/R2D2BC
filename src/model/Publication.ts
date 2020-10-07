@@ -109,41 +109,13 @@ export default class Publication {
         this.resources = manifestJSON.resources || [];
         this.tableOfContents = manifestJSON.toc || [];
         this.landmarks = manifestJSON.landmarks || [];
-        // this.pageList = manifestJSON.parse("page-list") || [];
         this.pageList = (manifestJSON['page-list'] || manifestJSON.pageList) || [];
 
         this.manifestUrl = manifestUrl;
     }
 
     public getStartLink(): Link | null {
-        if (this.readingOrder.length > 0) {
-            return this.readingOrder[0];
-        }
-        return null;
-    }
-
-    public getPreviousSpineItem(href: string): Link | null {
-        const index = this.getSpineIndex(href);
-        if (index !== null && index > 0) {
-            return this.readingOrder[index - 1];
-        }
-        return null;
-    }
-
-    public getNextSpineItem(href: string): Link | null {
-        const index = this.getSpineIndex(href);
-        if (index !== null && index < (this.readingOrder.length -1)) {
-            return this.readingOrder[index + 1];
-        }
-        return null;
-    }
-
-    public getSpineItem(href: string): Link | null {
-        const index = this.getSpineIndex(href);
-        if (index !== null) {
-            return this.readingOrder[index];
-        }
-        return null;
+        return this.readingOrder[0] || null;
     }
 
     public getSpineIndex(href: string): number | null {
@@ -153,14 +125,26 @@ export default class Publication {
         return index
     }
 
+    public getPreviousSpineItem(href: string): Link | null {
+        return this.readingOrder[this.getSpineIndex(href) - 1] || null;
+    }
+
+    public getNextSpineItem(href: string): Link | null {
+        return this.readingOrder[this.getSpineIndex(href) + 1] || null;
+    }
+
+    public getSpineItem(href: string): Link | null {
+        return this.readingOrder[this.getSpineIndex(href)] || null;
+    }
+
     public getAbsoluteHref(href: string): string | null {
         return new URL(href, this.manifestUrl.href).href;
     }
+
     public getRelativeHref(href: string): string | null {
         const manifest = this.manifestUrl.href.replace("/manifest.json", ""); //new URL(this.manifestUrl.href, this.manifestUrl.href).href;
         return href.replace(manifest, "");
     }
-
 
     public getTOCItemAbsolute(href: string): Link | null {
         const absolute = this.getAbsoluteHref(href)
@@ -168,8 +152,8 @@ export default class Publication {
             for (let index = 0; index < links.length; index++) {
                 const item = links[index];
                 if (item.href) {
-                    const hrefAbsolutre = (item.href.indexOf("#") !== -1)  ?  item.href.slice(0, item.href.indexOf("#")) : item.href
-                    const itemUrl = new URL(hrefAbsolutre, this.manifestUrl.href).href;
+                    const hrefAbsolute = (item.href.indexOf("#") !== -1)  ?  item.href.slice(0, item.href.indexOf("#")) : item.href
+                    const itemUrl = new URL(hrefAbsolute, this.manifestUrl.href).href;
                     if (itemUrl === href) {
                         return item;
                     }
